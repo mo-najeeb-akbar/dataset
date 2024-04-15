@@ -12,8 +12,8 @@ def load_tfr_dataset(
         data_path: str,
         regex: str,
         shuffle: bool = True,
-        cycle_length: int = 5,
-        block_length: int = 5,
+        cycle_length: int = 3,
+        block_length: int = 3,
         verbose=0
 ) -> tf.data.TFRecordDataset:
     """
