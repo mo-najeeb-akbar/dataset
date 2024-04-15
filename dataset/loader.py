@@ -2,6 +2,7 @@ from functools import partial
 import tensorflow as tf
 import json
 import os
+import glob
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -13,6 +14,7 @@ def load_tfr_dataset(
         shuffle: bool = True,
         cycle_length: int = 5,
         block_length: int = 5,
+        verbose=0
 ) -> tf.data.TFRecordDataset:
     """
 
@@ -23,10 +25,18 @@ def load_tfr_dataset(
     :param shuffle: should shuffle dataset on read
     :param cycle_length: controls the number of input records that are processed concurrently
     :param block_length: controls the number of record blocks to interleave
+    :param verbose: {0: nothing, 1: print(len(files)), 2: print(files)
     :return:
     """
     parser = partial(parser, feature_dict)
-    filenames_dataset = tf.data.Dataset.list_files(os.path.join(data_path, regex), shuffle=shuffle)
+    reg_paths = os.path.join(data_path, regex)
+    files = glob.glob(reg_paths)
+    if verbose == 1:
+        print(f'Loader is using: {len(files)} files.')
+    if verbose == 2:
+        print(f'Loader is using: {files}')
+
+    filenames_dataset = tf.data.Dataset.list_files(reg_paths, shuffle=shuffle)
     dataset = filenames_dataset.interleave(
         lambda x: tf.data.TFRecordDataset(x).map(parser, num_parallel_calls=tf.data.AUTOTUNE),
         cycle_length=cycle_length,
