@@ -2,7 +2,9 @@ from .types import ParseableDatum
 from .utility import split_list, serialize
 from joblib import Parallel, delayed
 import tensorflow as tf
+import numpy as np
 import os
+import json
 
 
 def write_dataset(
@@ -49,3 +51,33 @@ def write_dataset(
     )
 
 
+def write_parser_dict(
+        data_ref: ParseableDatum,
+        output_path: str,
+        output_name: str
+) -> None:
+    """
+
+    :param data_ref:
+    :param output_path:
+    :param output_name:
+    :return:
+    """
+    res = {}
+    for k, v in data_ref.references.items():
+        shape = 'None'
+        res[k] = {
+            'type': type(v).__name__,
+            'shape': f'{shape}'
+        }
+    for k, v in data_ref.metadata.items():
+        if isinstance(v, np.ndarray):
+            shape = v.shape
+        else:
+            shape = '1'
+        res[k] = {
+            'type': type(v).__name__,
+            'shape': f'{shape}'
+        }
+    with open(os.path.join(output_path, output_name), 'w') as f:
+        json.dump(res, f, indent=4)
