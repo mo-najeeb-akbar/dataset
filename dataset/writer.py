@@ -32,8 +32,8 @@ def write_dataset(
     extra_suffix = '' if extra_identifiers is None else '_' + '_'.join(extra_identifiers)
     output_file_pre = os.path.join(output_path, f'record{extra_suffix}_')
 
-    def process_chunk(refs: list[ParseableDatum], _id: int):
-        writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{_id}.tfrecord')
+    def process_chunk(refs: list[ParseableDatum], id_: int):
+        writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, ref in enumerate(refs):
             serializable_units = decode_func(ref)
             if serializable_units is not None:
@@ -41,9 +41,9 @@ def write_dataset(
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
                 writer_tf.write(example_proto.SerializeToString())
             if verbose == 2:
-                print(f'Processed datum number: {idx} in chunk {_id}.')
+                print(f'Processed datum number: {idx} in chunk {id_}.')
         if verbose == 1:
-            print(f'Finished writing chunk number: {_id}.')
+            print(f'Finished writing chunk number: {id_}.')
 
     Parallel(n_jobs=num_workers)(
         delayed(process_chunk)(references, shard_id)
