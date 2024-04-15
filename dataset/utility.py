@@ -1,8 +1,7 @@
+from .types import SerializableDatum
 import tensorflow as tf
 import cv2
 import numpy as np
-from dataclasses import dataclass, field
-from typing import Dict
 
 
 def _bytes_feature(value):
@@ -35,29 +34,6 @@ def split_two_lists(list1, list2, k):
         taken = next_taken
 
     return parts1, parts2
-
-
-@dataclass(frozen=True)
-class ParseableDatum:
-    references: Dict[str, str] = field(default_factory=dict)
-    metadata: Dict[str, str] = field(default_factory=dict)
-
-    def __str__(self):
-        return f'References: {self.references} -- Metadata: {self.metadata}'
-
-
-@dataclass(frozen=True)
-class SerializableDatum:
-    value: any = field(default=None)
-    name: str = field(default_factory=str)
-
-    def __post_init__(self):
-        if not isinstance(self.value, (np.ndarray, int, float)):
-            raise TypeError(
-                f"Value must be an instance of np.ndarray, int, or float, got {type(self.value).__name__}")
-
-    def __str__(self):
-        return f'Name: {self.name} -- Value: {self.value}'
 
 
 def serialize(data: list[SerializableDatum]) -> dict[str, tf.train.Feature]:

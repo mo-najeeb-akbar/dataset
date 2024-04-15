@@ -14,6 +14,7 @@ RUN set -x \
     && pip install -U matplotlib \
     && pip install -U opencv-python \
     && pip install -U tensorboard-plugin-profile \
-    && pip install -U py-spy
+    && pip install -U py-spy \
+    && pip install -U joblib
 
 ENTRYPOINT ["/bin/bash"]

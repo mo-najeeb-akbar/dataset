@@ -1,4 +1,5 @@
-from utility import ParseableDatum, split_two_lists, serialize
+from .types import ParseableDatum
+from .utility import split_two_lists, serialize
 from joblib import Parallel, delayed
 import tensorflow as tf
 import os
