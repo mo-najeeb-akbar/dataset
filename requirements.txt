@@ -1,0 +1,4 @@
+matplotlib==3.8.4
+opencv-python==4.9.0.80
+py-spy==0.3.14
+tensorboard-plugin-profile==2.15.1
