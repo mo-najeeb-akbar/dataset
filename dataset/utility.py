@@ -19,21 +19,19 @@ def _int64_feature(value):
     return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
 
-def split_two_lists(list1, list2, k):
+def split_list(list1, k):
     n = len(list1)  # Assuming both lists are of the same length
     part_size = n // k
     remainder = n % k
 
     parts1 = []
-    parts2 = []
     taken = 0
     for i in range(k):
         next_taken = taken + part_size + (1 if i < remainder else 0)
         parts1.append(list1[taken:next_taken])
-        parts2.append(list2[taken:next_taken])
         taken = next_taken
 
-    return parts1, parts2
+    return parts1
 
 
 def serialize(data: list[SerializableDatum]) -> dict[str, tf.train.Feature]:
