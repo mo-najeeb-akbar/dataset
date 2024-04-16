@@ -20,6 +20,7 @@ class TFRecordWriterPar:
         with tf.io.TFRecordWriter(self.file_path) as writer:
             while True:
                 data = self.q.get()
+                print(data)
                 if data is None:  # None is used as a signal to stop.
                     self.q.task_done()
                     break
@@ -27,6 +28,7 @@ class TFRecordWriterPar:
                 self.q.task_done()
 
     def add_data(self, processed_data):
+        print('Data receieved....')
         self.q.put(processed_data)
 
     def close(self):
