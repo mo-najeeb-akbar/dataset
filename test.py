@@ -5,6 +5,11 @@ import os, sys, glob
 import cv2
 import numpy as np
 import tensorflow as tf
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # This silences TensorFlow messages before it's imported
+import logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)  # This disables all lower priority logging
+
+
 
 
 def parser(feature_dict, example):
@@ -52,9 +57,8 @@ if __name__ == "__main__":
         decode_function,
         parseables,
         './',
-        num_shards=3,
-        num_workers=3,
-        verbose=1
+        num_shards=5,
+        num_workers=10
     )
 
     ds = load_tfr_dataset(
