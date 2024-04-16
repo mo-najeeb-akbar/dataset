@@ -66,7 +66,8 @@ def write_dataset(
     # Setup multiprocessing pool
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         # map_async for non-blocking calls
-        [pool.apply_async(worker, args=(data, writers[idx // num_shards])) for idx, data in enumerate(data_refs)]
+        block_size = (len(data_refs) // num_shards) + 1
+        [pool.apply_async(worker, args=(data, writers[idx // block_size])) for idx, data in enumerate(data_refs)]
         # Close pool and wait for work to finish
         pool.close()
         pool.join()
