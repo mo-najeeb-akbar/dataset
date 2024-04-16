@@ -44,7 +44,7 @@ def write_dataset(
                 print(f'Processed datum number: {idx} in chunk {id_}.')
         if verbose == 1:
             print(f'Finished writing chunk number: {id_}.')
-
+        writer_tf.close()
     Parallel(n_jobs=num_workers)(
         delayed(process_chunk)(references, shard_id)
             for shard_id, references in enumerate(sharded_data_refs)
