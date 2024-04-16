@@ -58,6 +58,7 @@ def write_dataset(
 
     def worker(data: list[Datum], writer: TFRecordWriterPar):
         serializable_units = decode_func(data)
+        print(serializable_units)
         if serializable_units is not None:
             serial_dict = serialize(serializable_units)
             example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
