@@ -1,4 +1,4 @@
-from dataset.types import ParseableDatum, SerializableDatum
+from dataset.types import Datum
 from dataset.writer import write_dataset, write_parser_dict
 from dataset.loader import load_tfr_dict, load_tfr_dataset
 import os, sys, glob
@@ -14,14 +14,16 @@ def parser(feature_dict, example):
     img_seg = tf.image.decode_image(example['seg'])
     return img, img_seg
 
-def decode_function(parseable):
+
+def decode_function(parseables):
     res = []
-    for k,v in parseable.references.items():
+    for pd in parseables:
+        v = pd.value
+        k = pd.name
         if isinstance(v, str):
-            img = cv2.imread(v, 0)
-            res.append(SerializableDatum(name=k, value=img))
-    for k, v in parseable.metadata.items():
-        res.append(SerializableDatum(name=k, value=v))
+            v = cv2.imread(v, 0)
+        res.append(Datum(name=k, value=v))
+
     return res
 
 if __name__ == "__main__":
@@ -35,10 +37,13 @@ if __name__ == "__main__":
         gray_imgs.append(gray_img)
     parseables = []
     for img_pth, seg_pth in zip(gray_imgs, label_imgs):
-        pd = ParseableDatum(
-            {'image': img_pth, 'seg': seg_pth}, {'val0': 1.0, 'val2': np.zeros((3,4))}
-        )
-        parseables.append(pd)
+        prs_list = []
+        prs_list += [Datum(name='image', value=img_pth)]
+        prs_list += [Datum(name='seg', value=seg_pth)]
+        prs_list += [Datum(name='val_0', value=1.23)]
+        prs_list += [Datum(name='val_1', value=2.22)]
+
+        parseables.append(prs_list)
 
     write_parser_dict(parseables[-1], './', 'roots.json')
     feature_dict = load_tfr_dict('./roots.json')

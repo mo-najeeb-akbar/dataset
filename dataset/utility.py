@@ -1,4 +1,4 @@
-from .types import SerializableDatum
+from .types import Datum
 import tensorflow as tf
 import cv2
 import numpy as np
@@ -34,7 +34,7 @@ def split_list(list1, k):
     return parts1
 
 
-def serialize(data: list[SerializableDatum]) -> dict[str, tf.train.Feature]:
+def serialize(data: list[Datum]) -> dict[str, tf.train.Feature]:
     result_dict = {}
     for datum in data:
         if isinstance(datum.value, np.ndarray):

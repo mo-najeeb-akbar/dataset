@@ -1,4 +1,4 @@
-from .types import ParseableDatum
+from .types import Datum
 from .utility import split_list, serialize
 from joblib import Parallel, delayed
 import tensorflow as tf
@@ -9,7 +9,7 @@ import json
 
 def write_dataset(
         decode_func,
-        data_refs: list[ParseableDatum],
+        data_refs: list[Datum],
         output_path: str,
         extra_identifiers: list[str] | None = None,
         num_shards: int = 1,
@@ -18,7 +18,7 @@ def write_dataset(
 ) -> None:
     """
 
-    :param decode_func: f(data_ref, data_store_elt) -> list[SerializableDatum] | None
+    :param decode_func: f(list[Datum]) -> list[Datum] | None
     :param data_refs: [{filename, type_str}, ...]
     :param output_path: location of folder where to write data
     :param extra_identifiers: list of strings appended to file names for more information
@@ -32,10 +32,10 @@ def write_dataset(
     extra_suffix = '' if extra_identifiers is None else '_' + '_'.join(extra_identifiers)
     output_file_pre = os.path.join(output_path, f'record{extra_suffix}_')
 
-    def process_chunk(refs: list[ParseableDatum], id_: int):
+    def process_chunk(data: list[list[Datum]], id_: int):
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
-        for idx, ref in enumerate(refs):
-            serializable_units = decode_func(ref)
+        for idx, dat in enumerate(data):
+            serializable_units = decode_func(dat)
             if serializable_units is not None:
                 serial_dict = serialize(serializable_units)
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
@@ -52,32 +52,36 @@ def write_dataset(
 
 
 def write_parser_dict(
-        data_ref: ParseableDatum,
+        data: list[Datum],
         output_path: str,
         output_name: str
 ) -> None:
     """
 
-    :param data_ref:
+    :param data:
     :param output_path:
     :param output_name:
     :return:
     """
     res = {}
-    for k, v in data_ref.references.items():
-        shape = 'None'
-        res[k] = {
-            'type': type(v).__name__,
-            'shape': f'{shape}'
-        }
-    for k, v in data_ref.metadata.items():
-        if isinstance(v, np.ndarray):
-            shape = v.shape
+    for datum in data:
+        k = datum.name
+        v = datum.value
+
+        if isinstance(v, str):
+            shape = 'None'
+            res[k] = {
+                'type': type(v).__name__,
+                'shape': f'{shape}'
+            }
         else:
-            shape = '1'
-        res[k] = {
-            'type': type(v).__name__,
-            'shape': f'{shape}'
-        }
+            if isinstance(v, np.ndarray):
+                shape = v.shape
+            else:
+                shape = '1'
+            res[k] = {
+                'type': type(v).__name__,
+                'shape': f'{shape}'
+            }
     with open(os.path.join(output_path, output_name), 'w') as f:
         json.dump(res, f, indent=4)
