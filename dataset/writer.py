@@ -13,6 +13,7 @@ def write_dataset(
         extra_identifiers: list[str] | None = None,
         num_shards: int = 1,
         num_workers: int = 1,
+        threading_backend = 'loky',
         verbose: int = 0
 ) -> None:
     """
@@ -21,7 +22,8 @@ def write_dataset(
     :param extra_identifiers: list of strings appended to file names for more information
     :param num_shards: number of separate chunks to write data as
     :param num_workers: number of processes to spin up
-    :param verbose: {0: silent, 1: chunk completion, 2: datum completion}
+    :param threading_backend: threading backend to use: loky, multiprocessing, threading
+    :param verbose: 0: silent, 10: chunk completion
     :return:
     """
     sharded_data_refs = split_list(data_refs, num_shards)
@@ -36,12 +38,9 @@ def write_dataset(
                 serial_dict = serialize(serializable_units)
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
                 writer_tf.write(example_proto.SerializeToString())
-            if verbose == 2:
-                print(f'Processed datum number: {idx} in chunk {id_}.')
-        if verbose == 1:
-            print(f'Finished writing chunk number: {id_}.')
         writer_tf.close()
-    Parallel(n_jobs=num_workers, backend='loky', verbose=10)(
+
+    Parallel(n_jobs=num_workers, backend=threading_backend, verbose=verbose)(
         delayed(process_chunk)(references, shard_id)
             for shard_id, references in enumerate(sharded_data_refs)
     )
