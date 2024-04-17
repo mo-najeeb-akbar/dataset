@@ -8,8 +8,7 @@ from joblib import Parallel, delayed
 
 
 def write_dataset(
-        decode_func,
-        data_refs: list[Datum],
+        data_refs: list[list[Datum]],
         output_path: str,
         extra_identifiers: list[str] | None = None,
         num_shards: int = 1,
@@ -17,7 +16,7 @@ def write_dataset(
         verbose: int = 0
 ) -> None:
     """
-	@@ -23,32 +48,32 @@ def write_dataset(
+    :param data_refs: datums to convert
     :param output_path: location of folder where to write data
     :param extra_identifiers: list of strings appended to file names for more information
     :param num_shards: number of separate chunks to write data as
@@ -31,8 +30,8 @@ def write_dataset(
 
     def process_chunk(data: list[list[Datum]], id_: int):
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
-        for idx, dat in enumerate(data):
-            serializable_units = decode_func(dat)
+        for idx, dat_ in enumerate(data):
+            serializable_units = [dat.function(dat) for dat in dat_]
             if serializable_units is not None:
                 serial_dict = serialize(serializable_units)
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))

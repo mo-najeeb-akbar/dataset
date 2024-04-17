@@ -19,17 +19,13 @@ def parser(feature_dict, example):
     img_seg = tf.image.decode_image(example['seg'])
     return img, img_seg
 
+def identity(dat):
+    return dat
 
-def decode_function(parseables):
-    res = []
-    for pd in parseables:
-        v = pd.value
-        k = pd.name
-        if isinstance(v, str):
-            v = cv2.imread(v, 0)
-        res.append(Datum(name=k, value=v))
 
-    return res
+def image_decoder(dat):
+    return Datum(name=dat.name, value=cv2.imread(dat.value, 0))
+
 
 if __name__ == "__main__":
     img_dir = sys.argv[1]
@@ -43,10 +39,10 @@ if __name__ == "__main__":
     parseables = []
     for img_pth, seg_pth in zip(gray_imgs, label_imgs):
         prs_list = []
-        prs_list += [Datum(name='image', value=img_pth)]
-        prs_list += [Datum(name='seg', value=seg_pth)]
-        prs_list += [Datum(name='val_0', value=1.23)]
-        prs_list += [Datum(name='val_1', value=2.22)]
+        prs_list += [Datum(name='image', value=img_pth, function=image_decoder)]
+        prs_list += [Datum(name='seg', value=seg_pth, function=image_decoder)]
+        prs_list += [Datum(name='val_0', value=1.23, function=identity)]
+        prs_list += [Datum(name='val_1', value=2.22, function=identity)]
 
         parseables.append(prs_list)
 
@@ -54,7 +50,6 @@ if __name__ == "__main__":
     feature_dict = load_tfr_dict('./roots.json')
 
     write_dataset(
-        decode_function,
         parseables,
         './',
         num_shards=5,
