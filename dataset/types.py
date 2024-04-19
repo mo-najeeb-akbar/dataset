@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
 import numpy as np
+from typing import Callable, TypeVar
 
+T = TypeVar('T')
+
+
+def identity(x: T) -> T:
+    return x
 
 @dataclass(frozen=True)
 class Datum:
@@ -14,7 +20,7 @@ class Datum:
     """
     value: any = field(default=None)
     name: str = field(default_factory=str)
-    function: any = field(default=None)
+    function: Callable[[T], T] = field(default=identity)
 
     def __post_init__(self):
         if not isinstance(self.value, (np.ndarray, int, float, str)):
