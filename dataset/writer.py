@@ -1,5 +1,5 @@
 from .types import Datum
-from .utility import split_list, serialize
+from .utility import split_list
 import tensorflow as tf
 import numpy as np
 import os
