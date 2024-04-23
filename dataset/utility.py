@@ -34,16 +34,15 @@ def split_list(list1, k):
     return parts1
 
 
-def serialize(data: list[Datum]) -> dict[str, tf.train.Feature]:
-    result_dict = {}
-    for datum in data:
-        if isinstance(datum.value, np.ndarray):
-            if datum.value.dtype == np.uint8:
-                success, encoded_image = cv2.imencode('.jpg', datum.value)
-                encoded_bytes = encoded_image.tobytes()
-                result_dict[datum.name] = _bytes_feature(encoded_bytes)
-            else:
-                result_dict[datum.name] = _float_feature(datum.value.flatten())
-        else:
-            result_dict[datum.name] = _float_feature([datum.value])
-    return result_dict
+def serialize_float_array(data: Datum) -> tf.train.Feature:
+    return _float_feature(data.value.flatten())
+
+
+def serialize_float_or_int(data: Datum) -> tf.train.Feature:
+    return _float_feature([data.value])
+
+
+def serialize_image(data: Datum):
+    success, encoded_image = cv2.imencode('.jpg', data.value)
+    encoded_bytes = encoded_image.tobytes()
+    return _bytes_feature(encoded_bytes)

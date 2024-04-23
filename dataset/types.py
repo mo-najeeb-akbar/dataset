@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 import numpy as np
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, Optional
 
 T = TypeVar('T')
 
@@ -8,19 +8,21 @@ T = TypeVar('T')
 def identity(x: T) -> T:
     return x
 
+
+def get_function_name(func: Optional[Callable]) -> str:
+    # Attempt to retrieve the function's name, handling cases where it may not be directly available
+    if func is None:
+        return ''
+    return getattr(func, '__name__', repr(func))
+
+
 @dataclass(frozen=True)
 class Datum:
-    """
-    Represents a unit of data.
 
-    Attributes:
-        value: (np.ndarray, flot, int) that can be serialized into bytes.
-        name: str that will be used to create a serialization dictionary.
-        function: decompress or process the unit of data within value lazily.
-    """
     value: any = field(default=None)
     name: str = field(default_factory=str)
-    function: Callable[[T], T] = field(default=identity)
+    decompress_fn: Callable[[T], T] = field(default=identity)
+    serialize_fn: Callable[[T], bytes] = field(default=None)
 
     def __post_init__(self):
         if not isinstance(self.value, (np.ndarray, int, float, str)):
@@ -28,4 +30,7 @@ class Datum:
                 f"Value must be an instance of np.ndarray, int, or float, got {type(self.value).__name__}")
 
     def __str__(self):
-        return f'Name: {self.name} -- Value: {self.value} -- Function: {self.function.__name__}'
+        return (f'Name: {self.name}\n'
+                f'    Value: {self.value}\n'
+                f'    Decompress Fn: {get_function_name(self.decompress_fn)}\n'
+                f'    Serialze Fn: {get_function_name(self.serialize_fn)}')

@@ -33,9 +33,9 @@ def write_dataset(
     def process_chunk(data: list[list[Datum]], id_: int):
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, dat_ in enumerate(data):
-            serializable_units = [dat.function(dat) for dat in dat_]
+            serializable_units = [dat.decompress_fn(dat) for dat in dat_]
             if serializable_units is not None:
-                serial_dict = serialize(serializable_units)
+                serial_dict = {sdat.name: sdat.serialize_fn(sdat) for sdat in serializable_units}
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
                 writer_tf.write(example_proto.SerializeToString())
         writer_tf.close()

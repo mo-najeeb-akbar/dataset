@@ -1,6 +1,7 @@
 from dataset.types import Datum
 from dataset.writer import write_dataset, write_parser_dict
 from dataset.loader import load_tfr_dict, load_tfr_dataset
+from dataset.utility import serialize_image, serialize_float_array, serialize_float_or_int
 import os, sys, glob
 import cv2
 import numpy as np
@@ -39,10 +40,10 @@ if __name__ == "__main__":
     parseables = []
     for img_pth, seg_pth in zip(gray_imgs, label_imgs):
         prs_list = []
-        prs_list += [Datum(name='image', value=img_pth, function=image_decoder)]
-        prs_list += [Datum(name='seg', value=seg_pth, function=image_decoder)]
-        prs_list += [Datum(name='val_0', value=1.23, function=identity)]
-        prs_list += [Datum(name='val_1', value=2.22, function=identity)]
+        prs_list += [Datum(name='image', value=img_pth, decompress_fn=image_decoder, serialize_fn=serialize_image)]
+        prs_list += [Datum(name='seg', value=seg_pth, decompress_fn=image_decoder, serialize_fn=serialize_image)]
+        prs_list += [Datum(name='val_0', value=1.23, serialize_fn=serialize_float_or_int)]
+        prs_list += [Datum(name='val_1', value=2.22, serialize_fn=serialize_float_or_int)]
 
         parseables.append(prs_list)
 

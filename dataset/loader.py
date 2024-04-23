@@ -61,6 +61,6 @@ def load_tfr_dict(
                 type_ =  tf.float32
                 num_vals_list = v['shape'].replace('(','').replace(')','').split(',')
                 num_vals = 1
-                [num_vals := num_vals * int(k) for k in num_vals_list]
+                _ = [num_vals := num_vals * int(k) for k in num_vals_list]
                 tf_dict[k] = tf.io.FixedLenFeature([num_vals], type_)
         return tf_dict
