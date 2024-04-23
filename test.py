@@ -48,7 +48,7 @@ if __name__ == "__main__":
         parseables.append(prs_list)
 
     write_parser_dict(parseables[-1], './', 'roots.json')
-    feature_dict = load_tfr_dict('./roots.json')
+    feature_dict, shape_dict = load_tfr_dict('./roots.json')
 
     write_dataset(
         parseables,

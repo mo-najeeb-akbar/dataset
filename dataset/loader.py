@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Tuple
 import tensorflow as tf
 import json
 import os
@@ -48,19 +49,22 @@ def load_tfr_dataset(
 
 def load_tfr_dict(
         json_path: str
-) -> dict[str, tf.io.FixedLenFeature]:
+) -> Tuple[dict[str, tf.io.FixedLenFeature], dict[str, list[int]]]:
     with open(json_path, 'r') as f:
         js_dict = json.load(f)
         tf_dict = {}
-
+        tf_shapes = {}
         for k, v in js_dict.items():
+            if v is not 'None':
+                num_vals_list = v['shape'].replace('(', '').replace(')', '').split(',')
+                tf_shapes[k] = num_vals_list
             if v['type'] == 'str':
                 type_ = tf.string
                 tf_dict[k] = tf.io.FixedLenFeature([], type_)
             else:
                 type_ =  tf.float32
-                num_vals_list = v['shape'].replace('(','').replace(')','').split(',')
+
                 num_vals = 1
                 _ = [num_vals := num_vals * int(k) for k in num_vals_list]
                 tf_dict[k] = tf.io.FixedLenFeature([num_vals], type_)
-        return tf_dict
+        return tf_dict, tf_shapes
