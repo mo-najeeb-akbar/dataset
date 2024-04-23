@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Tuple
 import tensorflow as tf
 import json
@@ -9,7 +8,6 @@ AUTOTUNE = tf.data.AUTOTUNE
 
 def load_tfr_dataset(
         parser,
-        feature_dict: dict[str, tf.io.FixedLenFeature],
         data_path: str,
         regex: str,
         shuffle: bool = True,
@@ -20,7 +18,6 @@ def load_tfr_dataset(
     """
 
     :param parser: function(feature_dict, example) to unpack the dataset
-    :param feature_dict: decoding feature dictionary
     :param data_path: path to tfrecords
     :param regex: additional regex to look for files
     :param shuffle: should shuffle dataset on read
@@ -29,7 +26,6 @@ def load_tfr_dataset(
     :param verbose: {0: nothing, 1: print(len(files)), 2: print(files)
     :return:
     """
-    parser = partial(parser, feature_dict)
     reg_paths = os.path.join(data_path, regex)
     files = glob.glob(reg_paths)
     if verbose == 1:
