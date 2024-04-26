@@ -51,13 +51,12 @@ def load_tfr_dict(
         tf_dict = {}
         tf_shapes = {}
         for k, v in js_dict.items():
-            if v is not 'None':
-                num_vals_list = v['shape'].replace('(', '').replace(')', '').replace(' ', '').split(',')
-                tf_shapes[k] = [int(val_) for val_ in num_vals_list]
             if v['type'] == 'str':
                 type_ = tf.string
                 tf_dict[k] = tf.io.FixedLenFeature([], type_)
             else:
+                num_vals_list = v['shape'].replace('(', '').replace(')', '').replace(' ', '').split(',')
+                tf_shapes[k] = [int(val_) for val_ in num_vals_list]
                 type_ =  tf.float32
 
                 num_vals = 1
