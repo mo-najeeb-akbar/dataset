@@ -6,6 +6,7 @@ import os
 import json
 from typing import Tuple, Callable
 import multiprocessing
+import dill as pickle
 
 def write_dataset(
         data_refs: list[list[Datum]],
@@ -13,9 +14,6 @@ def write_dataset(
         output_path: str,
         extra_identifiers: list[str] | None = None,
         num_shards: int = 1,
-        num_workers: int = 1,
-        threading_backend = 'loky',
-        verbose: int = 0
 ) -> None:
     """
     :param data_refs: datums to convert
@@ -31,7 +29,9 @@ def write_dataset(
     extra_suffix = '' if extra_identifiers is None else '_' + '_'.join(extra_identifiers)
     output_file_pre = os.path.join(output_path, f'record{extra_suffix}_')
 
-    def process_chunk(data: list[list[Datum]], id_: int, closures_: list[Tuple[Callable, Callable]]):
+    pickled_closures = [(pickle.dumps(a), pickle.dumps(b)) for (a,b) in closures]
+    def process_chunk(data: list[list[Datum]], id_: int, pickled_closures_: list[Tuple[Callable, Callable]]):
+        closures_ = [(pickle.loads(a), pickle.loads(b)) for (a,b) in pickled_closures]
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, dat_ in enumerate(data):
             serializable_units = [closures_[d_idx][0](dat) for d_idx, dat in enumerate(dat_)]
@@ -43,7 +43,7 @@ def write_dataset(
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         # Use pool.starmap to pass both the function and items to the worker
-        pool.starmap(process_chunk, [(references, shard_id, closures)
+        pool.starmap(process_chunk, [(references, shard_id, pickled_closures)
                                                for shard_id, references in enumerate(sharded_data_refs)])
 
 
