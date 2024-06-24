@@ -40,7 +40,7 @@ def write_dataset(
                 writer_tf.write(example_proto.SerializeToString())
         writer_tf.close()
 
-    Parallel(n_jobs=num_workers, backend=threading_backend, verbose=verbose)(
+    Parallel(n_jobs=num_workers, backend=threading_backend, verbose=verbose, pre_dispatch='all')(
         delayed(process_chunk)(references, shard_id)
             for shard_id, references in enumerate(sharded_data_refs)
     )
