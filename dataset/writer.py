@@ -5,9 +5,7 @@ import numpy as np
 import os
 import json
 from typing import Tuple, Callable
-import joblib
-from joblib import Parallel, delayed
-
+import multiprocessing
 
 def write_dataset(
         data_refs: list[list[Datum]],
@@ -33,22 +31,20 @@ def write_dataset(
     extra_suffix = '' if extra_identifiers is None else '_' + '_'.join(extra_identifiers)
     output_file_pre = os.path.join(output_path, f'record{extra_suffix}_')
 
-    def process_chunk(data: list[list[Datum]], id_: int):
+    def process_chunk(data: list[list[Datum]], id_: int, closures_: list[Tuple[Callable, Callable]]):
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, dat_ in enumerate(data):
-            serializable_units = [closures[d_idx][0](dat) for d_idx, dat in enumerate(dat_)]
+            serializable_units = [closures_[d_idx][0](dat) for d_idx, dat in enumerate(dat_)]
             if serializable_units is not None:
-                serial_dict = {sdat.name: closures[s_idx][1](sdat) for s_idx, sdat in enumerate(serializable_units)}
+                serial_dict = {sdat.name: closures_[s_idx][1](sdat) for s_idx, sdat in enumerate(serializable_units)}
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
                 writer_tf.write(example_proto.SerializeToString())
         writer_tf.close()
 
-    with joblib.parallel_backend('multiprocessing', n_jobs=num_workers, verbose=verbose):
-        with joblib.parallel_backend.nogil:
-            Parallel(pre_dispatch='all')(
-                delayed(process_chunk)(references, shard_id)
-                    for shard_id, references in enumerate(sharded_data_refs)
-            )
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        # Use pool.starmap to pass both the function and items to the worker
+        pool.starmap(process_chunk, [(references, shard_id, closures)
+                                               for shard_id, references in enumerate(sharded_data_refs)])
 
 
 def write_parser_dict(
