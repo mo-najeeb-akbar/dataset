@@ -21,8 +21,8 @@ class Datum:
 
     value: any = field(default=None)
     name: str = field(default_factory=str)
-    decompress_fn: Callable[[T], T] = field(default=identity)
-    serialize_fn: Callable[[T], bytes] = field(default=None)
+    # decompress_fn: Callable[[T], T] = field(default=identity)
+    # serialize_fn: Callable[[T], bytes] = field(default=None)
 
     def __post_init__(self):
         if not isinstance(self.value, (np.ndarray, int, float, str)):
@@ -31,6 +31,6 @@ class Datum:
 
     def __str__(self):
         return (f'Name: {self.name}\n'
-                f'    Value: {self.value}\n'
-                f'    Decompress Fn: {get_function_name(self.decompress_fn)}\n'
-                f'    Serialze Fn: {get_function_name(self.serialize_fn)}')
+                f'    Value: {self.value}\n')
+                # f'    Decompress Fn: {get_function_name(self.decompress_fn)}\n'
+                # f'    Serialze Fn: {get_function_name(self.serialize_fn)}')

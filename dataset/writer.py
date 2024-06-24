@@ -4,11 +4,13 @@ import tensorflow as tf
 import numpy as np
 import os
 import json
+from typing import Tuple, Callable
 from joblib import Parallel, delayed
 
 
 def write_dataset(
         data_refs: list[list[Datum]],
+        closures: list[Tuple[Callable, Callable]],
         output_path: str,
         extra_identifiers: list[str] | None = None,
         num_shards: int = 1,
@@ -33,9 +35,9 @@ def write_dataset(
     def process_chunk(data: list[list[Datum]], id_: int):
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, dat_ in enumerate(data):
-            serializable_units = [dat.decompress_fn(dat) for dat in dat_]
+            serializable_units = [closures[d_idx][0](dat) for d_idx, dat in enumerate(dat_)]
             if serializable_units is not None:
-                serial_dict = {sdat.name: sdat.serialize_fn(sdat) for sdat in serializable_units}
+                serial_dict = {sdat.name: closures[s_idx][1](sdat) for s_idx, sdat in enumerate(serializable_units)}
                 example_proto = tf.train.Example(features=tf.train.Features(feature=serial_dict))
                 writer_tf.write(example_proto.SerializeToString())
         writer_tf.close()
