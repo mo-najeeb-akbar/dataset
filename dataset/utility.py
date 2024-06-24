@@ -1,7 +1,6 @@
 from .types import Datum
 import tensorflow as tf
 import cv2
-import numpy as np
 
 
 def _bytes_feature(value):
@@ -20,7 +19,7 @@ def _int64_feature(value):
 
 
 def split_list(list1, k):
-    n = len(list1)  # Assuming both lists are of the same length
+    n = len(list1)
     part_size = n // k
     remainder = n % k
 
@@ -42,7 +41,7 @@ def serialize_float_or_int(data: Datum) -> tf.train.Feature:
     return _float_feature([data.value])
 
 
-def serialize_image(data: Datum, lossless: bool = False):
+def serialize_image(data: Datum, lossless: bool = False) -> tf.train.Feature:
     img_kind = '.png' if lossless else '.jpg'
     success, encoded_image = cv2.imencode(img_kind, data.value)
     encoded_bytes = encoded_image.tobytes()

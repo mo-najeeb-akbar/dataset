@@ -14,7 +14,7 @@ def load_tfr_dataset(
         cycle_length: int = 3,
         block_length: int = 3,
         verbose=0
-) -> tf.data.TFRecordDataset:
+) -> tf.data.Dataset:
     """
 
     :param parser: function(feature_dict, example) to unpack the dataset

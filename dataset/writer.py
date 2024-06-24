@@ -59,24 +59,18 @@ def write_parser_dict(
     :return:
     """
     res = {}
-    for datum in data:
+    serializable_units = [dat.decompress_fn(dat) for dat in data]
+    for datum in serializable_units:
         k = datum.name
         v = datum.value
 
-        if isinstance(v, str):
-            shape = 'None'
-            res[k] = {
-                'type': type(v).__name__,
-                'shape': f'{shape}'
-            }
+        if isinstance(v, np.ndarray):
+            shape = v.shape
         else:
-            if isinstance(v, np.ndarray):
-                shape = v.shape
-            else:
-                shape = '1'
-            res[k] = {
-                'type': type(v).__name__,
-                'shape': f'{shape}'
-            }
+            shape = '[1]'
+        res[k] = {
+            'type': type(v).__name__,
+            'shape': f'{shape}'
+        }
     with open(os.path.join(output_path, output_name), 'w') as f:
         json.dump(res, f, indent=4)
