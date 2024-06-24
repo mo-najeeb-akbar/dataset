@@ -5,6 +5,7 @@ import numpy as np
 import os
 import json
 from typing import Tuple, Callable
+import joblib
 from joblib import Parallel, delayed
 
 
@@ -42,10 +43,12 @@ def write_dataset(
                 writer_tf.write(example_proto.SerializeToString())
         writer_tf.close()
 
-    Parallel(n_jobs=num_workers, backend=threading_backend, verbose=verbose, pre_dispatch='all')(
-        delayed(process_chunk)(references, shard_id)
-            for shard_id, references in enumerate(sharded_data_refs)
-    )
+    with joblib.parallel_backend('multiprocessing', n_jobs=num_workers, verbose=verbose):
+        with joblib.parallel_backend.nogil:
+            Parallel(pre_dispatch='all')(
+                delayed(process_chunk)(references, shard_id)
+                    for shard_id, references in enumerate(sharded_data_refs)
+            )
 
 
 def write_parser_dict(
