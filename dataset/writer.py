@@ -50,19 +50,21 @@ def write_dataset(
 
 
 def write_parser_dict(
-        data: list[Datum],
-        output_path: str,
-        output_name: str
+    data: list[Datum],
+    closures: list[Tuple[Callable, Callable]],
+    output_path: str,
+    output_name: str
 ) -> None:
     """
 
     :param data:
+    :param closures:
     :param output_path:
     :param output_name:
     :return:
     """
     res = {}
-    serializable_units = [dat.decompress_fn(dat) for dat in data]
+    serializable_units = [closures[d_idx][0](dat) for d_idx, dat in enumerate(data)]
     for datum in serializable_units:
         k = datum.name
         v = datum.value
