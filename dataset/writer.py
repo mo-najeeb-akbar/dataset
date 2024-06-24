@@ -31,7 +31,7 @@ def write_dataset(
 
     pickled_closures = [(pickle.dumps(a), pickle.dumps(b)) for (a,b) in closures]
     def process_chunk(data: list[list[Datum]], id_: int, pickled_closures_: list[Tuple[Callable, Callable]]):
-        closures_ = [(pickle.loads(a), pickle.loads(b)) for (a,b) in pickled_closures]
+        closures_ = [(pickle.loads(a), pickle.loads(b)) for (a,b) in pickled_closures_]
         writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
         for idx, dat_ in enumerate(data):
             serializable_units = [closures_[d_idx][0](dat) for d_idx, dat in enumerate(dat_)]
