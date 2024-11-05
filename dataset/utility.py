@@ -46,3 +46,8 @@ def serialize_image(data: Datum, lossless: bool = False) -> tf.train.Feature:
     success, encoded_image = cv2.imencode(img_kind, data.value)
     encoded_bytes = encoded_image.tobytes()
     return _bytes_feature(encoded_bytes)
+
+
+def serialize_string(data: Datum) -> tf.train.Feature:
+    encoded_bytes = data.value.encode('utf-8')
+    return _bytes_feature(encoded_bytes)
