@@ -41,11 +41,8 @@ def serialize_float_or_int(data: Datum) -> tf.train.Feature:
     return _float_feature([data.value])
 
 
-def serialize_image(data: Datum, lossless: bool = False) -> tf.train.Feature:
-    img_kind = '.png' if lossless else '.jpg'
-    success, encoded_image = cv2.imencode(img_kind, data.value)
-    encoded_bytes = encoded_image.tobytes()
-    return _bytes_feature(encoded_bytes)
+def serialize_image(data: Datum) -> tf.train.Feature:
+    return _bytes_feature(tf.io.serialize_tensor(data.value).numpy())
 
 
 def serialize_string(data: Datum) -> tf.train.Feature:
