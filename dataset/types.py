@@ -25,9 +25,9 @@ class Datum:
     # serialize_fn: Callable[[T], bytes] = field(default=None)
 
     def __post_init__(self):
-        if not isinstance(self.value, (np.ndarray, int, float, str)):
+        if not isinstance(self.value, (np.ndarray, int, float, str, tuple)):
             raise TypeError(
-                f"Value must be an instance of np.ndarray, int, or float, got {type(self.value).__name__}")
+                f"Value must be an instance of np.ndarray, int, float, str, or tuple -- got {type(self.value).__name__}")
 
     def __str__(self):
         return (f'Name: {self.name}\n'
