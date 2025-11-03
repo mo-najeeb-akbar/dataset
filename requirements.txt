@@ -1,6 +1,5 @@
 matplotlib==3.10.7
-numpy==1.26.4
 opencv-python==4.11.0.86
 py-spy==0.4.1
 tensorboard_plugin_profile==2.20.9
-tensorflow-cpu==2.16.1
+tensorflow-cpu==2.19
