@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Callable, Dict, List, Literal
 import tensorflow as tf
 import json
 import os
@@ -7,25 +7,30 @@ from functools import partial
 
 AUTOTUNE = tf.data.AUTOTUNE
 
+
 def load_tfr_dataset(
-        parser,
+        parser: Callable[[tf.Tensor], tf.Tensor],
         data_path: str,
         regex: str,
         shuffle: bool = True,
         cycle_length: int = 3,
         block_length: int = 3,
-        verbose=0
+        verbose: Literal[0, 1, 2] = 0
 ) -> tf.data.Dataset:
     """
-
-    :param parser: function(feature_dict, example) to unpack the dataset
-    :param data_path: path to tfrecords
-    :param regex: additional regex to look for files
-    :param shuffle: should shuffle dataset on read
-    :param cycle_length: controls the number of input records that are processed concurrently
-    :param block_length: controls the number of record blocks to interleave
-    :param verbose: {0: nothing, 1: print(len(files)), 2: print(files)
-    :return:
+    Load TFRecord dataset with interleaved reading for performance.
+    
+    Args:
+        parser: Function that parses a serialized example proto (typically created with functools.partial)
+        data_path: Directory containing TFRecord files
+        regex: Glob pattern to match TFRecord files (e.g., '*.tfrecord')
+        shuffle: Whether to shuffle the file order
+        cycle_length: Number of input files processed concurrently
+        block_length: Number of consecutive elements to produce from each file
+        verbose: Verbosity level (0: silent, 1: file count, 2: file list)
+    
+    Returns:
+        A tf.data.Dataset ready for iteration
     """
     reg_paths = os.path.join(data_path, regex)
     files = glob.glob(reg_paths)
@@ -46,7 +51,20 @@ def load_tfr_dataset(
 
 def load_tfr_dict(
         json_path: str
-) -> Tuple[dict[str, tf.io.FixedLenFeature], dict[str, list[int]]]:
+) -> Tuple[Dict[str, tf.io.FixedLenFeature], Dict[str, List[int]]]:
+    """
+    Load feature dictionary and shape information from a JSON schema file.
+    
+    This is used in conjunction with write_parser_dict() to parse TFRecords.
+    
+    Args:
+        json_path: Path to the JSON schema file created by write_parser_dict()
+    
+    Returns:
+        A tuple of (feature_dict, shape_dict):
+            - feature_dict: Dictionary mapping field names to tf.io.FixedLenFeature
+            - shape_dict: Dictionary mapping field names to their original shapes
+    """
     with open(json_path, 'r') as f:
         js_dict = json.load(f)
         tf_dict = {}

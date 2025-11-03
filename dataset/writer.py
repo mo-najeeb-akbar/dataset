@@ -4,15 +4,15 @@ import tensorflow as tf
 import numpy as np
 import os
 import json
-from typing import Tuple, Callable
+from typing import List, Optional
 import multiprocessing
 
 
 def process_chunk(
-    dataset: list[list[Datum]],
+    dataset: List[List[Datum]],
     output_file_pre: str,
     id_: int
-):
+) -> None:
     writer_tf = tf.io.TFRecordWriter(f'{output_file_pre}{id_}.tfrecord')
     for data_list in (dataset):
         serialized_dict = {
@@ -24,17 +24,19 @@ def process_chunk(
 
 
 def write_dataset(
-        data_refs: list[list[Datum]],
+        data_refs: List[List[Datum]],
         output_path: str,
-        extra_identifiers: list[str] | None = None,
+        extra_identifiers: Optional[List[str]] = None,
         num_shards: int = 1,
 ) -> None:
     """
-    :param data_refs: datums to convert
-    :param output_path: location of folder where to write data
-    :param extra_identifiers: list of strings appended to file names for more information
-    :param num_shards: number of separate chunks to write data as
-    :return:
+    Write a dataset to TFRecord files with parallel multi-shard support.
+    
+    Args:
+        data_refs: List of samples, where each sample is a list of Datum objects
+        output_path: Directory path where TFRecord files will be written
+        extra_identifiers: Optional list of strings to append to output filenames
+        num_shards: Number of separate TFRecord files to create (parallelized)
     """
     sharded_data_refs = split_list(data_refs, num_shards)
     extra_suffix = '' if extra_identifiers is None else '_' + '_'.join(extra_identifiers)
@@ -47,16 +49,19 @@ def write_dataset(
 
 
 def write_parser_dict(
-    data_list: list[Datum],
+    data_list: List[Datum],
     output_path: str,
     output_name: str
 ) -> None:
     """
-
-    :param data_list:
-    :param output_path:
-    :param output_name:
-    :return:
+    Write a JSON schema file describing the structure of the dataset.
+    
+    This schema is used by load_tfr_dict() to properly parse TFRecords.
+    
+    Args:
+        data_list: A sample list of Datum objects representing one record
+        output_path: Directory path where the JSON schema will be written
+        output_name: Filename for the JSON schema (e.g., 'schema.json')
     """
     res = {}
 

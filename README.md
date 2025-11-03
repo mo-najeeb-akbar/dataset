@@ -11,11 +11,11 @@ pip install -e .
 ## Quick Start
 
 ```python
-from dataset.types import Datum
-from dataset.writer import write_dataset, write_parser_dict
-from dataset.loader import load_tfr_dict, load_tfr_dataset
-from dataset.utility import serialize_float_array, serialize_float_or_int
+from dataset import Datum, write_dataset, write_parser_dict
+from dataset import load_tfr_dict, load_tfr_dataset
+from dataset import serialize_float_array, serialize_float_or_int
 import numpy as np
+import tensorflow as tf
 
 # 1. Define your data with Datum objects
 data = [
@@ -59,11 +59,11 @@ ds = load_tfr_dataset(parser, './output', '*.tfrecord')
 
 ## Features
 
-- Parallel multi-shard writing
-- Automatic schema generation
-- Custom preprocessing pipelines
-- Type-safe data handling
+- **Parallel multi-shard writing** - Fast dataset creation using all CPU cores
+- **Automatic schema generation** - Save/load field types and shapes
+- **Custom preprocessing** - Apply transforms before serialization
+- **Type-safe API** - Full type hints for IDE autocomplete and validation
+- **Simple imports** - Everything available from `dataset` package
 
-
-## TODO: 
- - User currently has lot of functional overhead with closures - need to add some support for this.
+## TODO
+- Reduce functional overhead with closures (add helper utilities)

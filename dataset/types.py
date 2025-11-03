@@ -1,8 +1,21 @@
 from dataclasses import dataclass, field
 import numpy as np
-from typing import Callable, TypeVar, Optional
+from typing import Callable, TypeVar, Optional, Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import tensorflow as tf
 
 T = TypeVar('T')
+
+# Type aliases for better IDE support
+DatumValue = Union[np.ndarray, int, float, str, tuple]
+
+if TYPE_CHECKING:
+    SerializeFn = Callable[['Datum'], 'tf.train.Feature']
+else:
+    SerializeFn = Callable[['Datum'], Any]
+
+DecompressFn = Callable[['Datum'], 'Datum']
 
 
 def identity(x: T) -> T:
@@ -10,7 +23,7 @@ def identity(x: T) -> T:
 
 
 def get_function_name(func: Optional[Callable]) -> str:
-    # Attempt to retrieve the function's name, handling cases where it may not be directly available
+    """Retrieve the function's name, handling cases where it may not be directly available."""
     if func is None:
         return ''
     return getattr(func, '__name__', repr(func))
@@ -18,11 +31,19 @@ def get_function_name(func: Optional[Callable]) -> str:
 
 @dataclass(frozen=True)
 class Datum:
-
-    value: any = field(default=None)
+    """
+    A named data element with serialization logic for TFRecord writing.
+    
+    Attributes:
+        value: The actual data (numpy array, int, float, str, or tuple)
+        name: Field name in the TFRecord
+        serialize_fn: Function to serialize the datum to tf.train.Feature
+        decompress_fn: Optional preprocessing function before serialization
+    """
+    value: DatumValue = field(default=None)
     name: str = field(default_factory=str)
-    decompress_fn: Callable[[T], T] = field(default=identity)
-    serialize_fn: Callable[[T], bytes] = field(default=None)
+    decompress_fn: DecompressFn = field(default=identity)
+    serialize_fn: Optional[SerializeFn] = field(default=None)
 
     def __post_init__(self):
         if not isinstance(self.value, (np.ndarray, int, float, str, tuple)):
