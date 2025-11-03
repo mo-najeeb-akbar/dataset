@@ -4,9 +4,7 @@ setup(
     name='dataset',
     version='0.0.1',
     packages=find_packages(),
-    install_requires=[
-
-    ],
+    install_requires=open('requirements.txt').read().splitlines(),
     author='momo',
     author_email='mo.najeeb.akbar@gmail.com',
     description='Create, write, read any dataset.',

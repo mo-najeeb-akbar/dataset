@@ -3,6 +3,7 @@ import tensorflow as tf
 import json
 import os
 import glob
+from functools import partial
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -60,6 +61,11 @@ def load_tfr_dict(
                 type_ =  tf.float32
 
                 num_vals = 1
-                _ = [num_vals := num_vals * val_ for val_ in tf_shapes[k]]
+                _ = [num_vals := num_vals * val_ for val_ in tf_shapes[k]]  # trying to be cute hehe
                 tf_dict[k] = tf.io.FixedLenFeature([num_vals], type_)
         return tf_dict, tf_shapes
+
+
+def make_parser(parser,feature_dict, shape_dict):
+    # TODO: for now I will own the overhead, but need to write this later to be easier to use
+    pass

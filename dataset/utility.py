@@ -1,6 +1,5 @@
 from .types import Datum
 import tensorflow as tf
-import cv2
 
 
 def _bytes_feature(value):
