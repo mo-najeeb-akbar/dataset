@@ -45,7 +45,7 @@ def serialize_float_or_int(data: Datum) -> tf.train.Feature:
 
 
 def serialize_image(data: Datum) -> tf.train.Feature:
-    return _bytes_feature(tf.io.serialize_tensor(data.value).numpy())
+    return _bytes_feature(tf.io.encode_png(data.value).numpy())
 
 
 def serialize_string(data: Datum) -> tf.train.Feature:
