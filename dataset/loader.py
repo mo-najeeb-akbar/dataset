@@ -74,7 +74,8 @@ def load_tfr_dict(
                 type_ = tf.string
                 tf_dict[k] = tf.io.FixedLenFeature([], type_)
             else:
-                num_vals_list = v['shape'].replace('(', '').replace(')', '').replace(' ', '').split(',')
+                shape_str = v['shape'].replace('(', '').replace(')', '').replace(' ', '')
+                num_vals_list = [s for s in shape_str.split(',') if s]
                 tf_shapes[k] = [int(val_) for val_ in num_vals_list]
                 type_ =  tf.float32
 
